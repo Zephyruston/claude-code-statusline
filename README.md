@@ -1,18 +1,23 @@
-# Claude Code Statusline for Windows
+# Claude Code Statusline
 
-A feature-rich PowerShell statusline script for [Claude Code](https://docs.anthropic.com/en/docs/claude-code) on Windows, displaying real-time session info, token usage, quota, git status, and historical statistics.
+A feature-rich statusline script for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), displaying real-time session info, token usage, quota, git status, and historical statistics.
+
+**Platform support:**
+- ✅ Windows — `statusline.ps1` (PowerShell)
+- 🔜 macOS — coming soon
+- 🔜 Linux — coming soon
 
 ## Preview
 
 ```
 Git [main]  M:2  D:0  S:1  U:3   A:0  B:1  V:0  C:0
 Model: Sonnet 4.6  |  ctx:45%
-Dir:   C:\Users\you\project
+Dir:   /your/project
 Quota:   5h:30%  7d:15%
-Current: in:86.3k  out:59k  upcache:0  pencache:125.7k  |  Cost: $48.383  |  1h24m  +120/-45
-Project: in:302k  out:81k  upcache:0  pencache:16.8M
-Today:   in:375k  out:115k  upcache:0  pencache:35M
-Total:   in:98M  out:2M  upcache:104.8M  pencache:307.8M
+Current: in:86.3k  out:59k  ↑cache:0  ✎cache:125.7k  |  Cost: $48.383  |  1h24m  +120/-45
+Project: in:302k  out:81k  ↑cache:0  ✎cache:16.8M
+Today:   in:375k  out:115k  ↑cache:0  ✎cache:35M
+Total:   in:98M  out:2M  ↑cache:104.8M  ✎cache:307.8M
 Session: a5363bfe-1234-5678-abcd-ef0123456789
 2026-04-16 04:27 UTC  |  12:27 CST  |  v2.1.110
 ```
@@ -44,33 +49,35 @@ V = diVerged               C = Conflicts
 ### Token field legend
 
 ```
-in       = input tokens
-out      = output tokens
-upcache  = cache read (arrow-up)
-pencache = cache write / creation (pencil)
+in      = input tokens          out     = output tokens
+↑cache  = cache read            ✎cache  = cache write (creation)
 ```
 
 > **Note on Cost:** The `Cost` value is Claude Code's internal estimate based on Anthropic's published API rates. If you use a Claude Max subscription (flat-rate), this reflects equivalent API cost, not actual billing.
 
-## Requirements
+---
 
-- Windows with PowerShell 5.1+
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI installed
-- Git (optional, for git status line)
+## Windows (PowerShell)
 
-## Installation
+### Requirements
+
+- PowerShell 5.1+
+- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
+- Git (optional, for git status)
+
+### Installation
 
 **1. Download the script**
 
 ```powershell
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/PeterCang/claude-statusline-windows/main/statusline.ps1" -OutFile "$env:USERPROFILE\.claude\statusline.ps1"
+Invoke-WebRequest -Uri "https://raw.githubusercontent.com/PeterCang/claude-code-statusline/master/statusline.ps1" -OutFile "$env:USERPROFILE\.claude\statusline.ps1"
 ```
 
 Or clone and copy manually:
 
 ```powershell
-git clone https://github.com/PeterCang/claude-statusline-windows.git
-Copy-Item claude-statusline-windows\statusline.ps1 "$env:USERPROFILE\.claude\statusline.ps1"
+git clone https://github.com/PeterCang/claude-code-statusline.git
+Copy-Item claude-code-statusline\statusline.ps1 "$env:USERPROFILE\.claude\statusline.ps1"
 ```
 
 **2. Edit the script — set your username**
@@ -96,11 +103,13 @@ Add to `%USERPROFILE%\.claude\settings.json`:
 
 **4. Restart Claude Code**
 
+---
+
 ## Customization
 
 ### Timezone
 
-The script defaults to **CST (UTC+8)**. To use a different timezone, update the `+8` offset in two places in the script:
+The script defaults to **CST (UTC+8)**. To use a different timezone, update the `+8` offset in two places:
 
 ```powershell
 # clock display (~line 52)
