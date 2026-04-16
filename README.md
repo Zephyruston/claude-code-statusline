@@ -57,51 +57,46 @@ in      = input tokens          out     = output tokens
 
 ---
 
-## Windows (PowerShell)
+## Installation
 
-### Requirements
+Installation is handled by Claude Code itself — no manual path editing required.
 
-- PowerShell 5.1+
-- [Claude Code](https://docs.anthropic.com/en/docs/claude-code) CLI
-- Git (optional, for git status)
+**Step 1 — Clone this repo**
 
-### Installation
-
-**1. Download the script**
-
-```powershell
-Invoke-WebRequest -Uri "https://raw.githubusercontent.com/PeterCang/claude-code-statusline/master/statusline.ps1" -OutFile "$env:USERPROFILE\.claude\statusline.ps1"
-```
-
-Or clone and copy manually:
-
-```powershell
+```bash
 git clone https://github.com/PeterCang/claude-code-statusline.git
-Copy-Item claude-code-statusline\statusline.ps1 "$env:USERPROFILE\.claude\statusline.ps1"
+cd claude-code-statusline
 ```
 
-**2. Edit the script — set your username**
+**Step 2 — Open Claude Code in this directory**
 
-Open `statusline.ps1` and update line 19:
-
-```powershell
-$claudeDir = 'C:/Users/YOUR_USERNAME/.claude'
+```bash
+claude
 ```
 
-**3. Configure Claude Code**
+**Step 3 — Type the install prompt**
 
-Add to `%USERPROFILE%\.claude\settings.json`:
-
-```json
-{
-  "statusLine": {
-    "type": "command",
-    "command": "powershell -NoProfile -ExecutionPolicy Bypass -File 'C:/Users/YOUR_USERNAME/.claude/statusline.ps1'"
-  }
-}
+```
+install
 ```
 
-**4. Restart Claude Code**
+Claude Code will automatically detect your OS, copy the script to the right location, patch the path, and update your `settings.json`.
+
+**Step 4 — Restart Claude Code**
+
+The statusline will appear in your next session.
+
+---
+
+## Uninstall
+
+Open Claude Code in the cloned repo directory and type:
+
+```
+uninstall
+```
+
+Claude Code will remove the script and clean up `settings.json`.
 
 ---
 
@@ -109,15 +104,20 @@ Add to `%USERPROFILE%\.claude\settings.json`:
 
 ### Timezone
 
-The script defaults to **CST (UTC+8)**. To use a different timezone, update the `+8` offset in two places:
+The script defaults to **CST (UTC+8)**. To change it, open the installed script and update the `+8` offset in two places:
 
+**Windows** (`~/.claude/statusline.ps1`):
 ```powershell
-# clock display (~line 52)
+# clock display
 $cstNow = $utcNow.AddHours(8)
 
-# today's token filter (~line 102)
+# today's token filter
 $cstNow = [System.DateTime]::UtcNow.AddHours(8)
 ```
+
+Change `8` to your UTC offset (e.g. `-5` for EST, `9` for JST).
+
+---
 
 ## Performance
 
@@ -127,6 +127,8 @@ Token stats (Project / Today / Total) are cached in `~/.claude/statusline-tok-ca
 |----------|------|
 | Warm cache | ~200ms |
 | Cold / cache miss | ~600ms–2s |
+
+---
 
 ## License
 
