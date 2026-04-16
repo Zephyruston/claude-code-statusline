@@ -4,17 +4,17 @@ A feature-rich statusline script for [Claude Code](https://docs.anthropic.com/en
 
 **Platform support:**
 - ✅ Windows — `statusline.ps1` (PowerShell)
-- 🔜 macOS — coming soon
-- 🔜 Linux — coming soon
+- ✅ macOS — `statusline.sh` (bash + python3)
+- ✅ Linux — `statusline.sh` (bash + python3)
 
 ## Preview
 
 ```
 Git [main]  M:2  D:0  S:1  U:3   A:0  B:1  V:0  C:0
-Model: Sonnet 4.6  |  ctx:45%
+Model: Claude Sonnet 4.6  |  ctx:45%
 Dir:   /your/project
 Quota:   5h:30%  7d:15%
-Current: in:86.3k  out:59k  ↑cache:0  ✎cache:125.7k  |  Cost: $48.383  |  1h24m  +120/-45
+Current: in:86.3k  out:59k  ↑cache:0  ✎cache:125.7k  |  Cost: $0.383  |  1h24m  +120/-45
 Project: in:302k  out:81k  ↑cache:0  ✎cache:16.8M
 Today:   in:375k  out:115k  ↑cache:0  ✎cache:35M
 Total:   in:98M  out:2M  ↑cache:104.8M  ✎cache:307.8M
@@ -104,7 +104,7 @@ Claude Code will remove the script and clean up `settings.json`.
 
 ### Timezone
 
-The script defaults to **CST (UTC+8)**. To change it, open the installed script and update the `+8` offset in two places:
+The script defaults to **CST (UTC+8)**. To change it, open the installed script and update the `+8` offset.
 
 **Windows** (`~/.claude/statusline.ps1`):
 ```powershell
@@ -113,6 +113,13 @@ $cstNow = $utcNow.AddHours(8)
 
 # today's token filter
 $cstNow = [System.DateTime]::UtcNow.AddHours(8)
+```
+
+**macOS / Linux** (`~/.claude/statusline.sh`):
+```python
+# Two occurrences of timedelta(hours=8) in the python block — change both:
+cst = utc + timedelta(hours=8)          # clock display
+ts_cst = (ts_utc + timedelta(hours=8))  # today's token filter
 ```
 
 Change `8` to your UTC offset (e.g. `-5` for EST, `9` for JST).

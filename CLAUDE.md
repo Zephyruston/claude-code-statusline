@@ -11,7 +11,7 @@ The current working directory IS the cloned repository. All script files are her
 ## Available scripts
 
 - `statusline.ps1` — Windows (PowerShell)
-- `statusline.sh` — macOS / Linux (coming soon)
+- `statusline.sh` — macOS / Linux (bash + python3)
 
 ---
 
