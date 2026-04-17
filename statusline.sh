@@ -90,9 +90,9 @@ token_line = (
     f"\u2191cache:{fmt(ses_cr)}  \u270Ecache:{fmt(ses_cw)}  |  Cost: ${round(ses_cost,3)}"
 )
 if dur_str:
-    token_line += f"  |  {dur_str}"
+    token_line += f"  |  duration: {dur_str}"
 if ses_added > 0 or ses_removed > 0:
-    token_line += f"  +{ses_added}/-{ses_removed}"
+    token_line += f"  Changes: +{ses_added}/-{ses_removed}"
 
 # ── quota ─────────────────────────────────────────────────────────────────────
 q5h_raw = jget(d, "rate_limits", "five_hour",  "used_percentage")
