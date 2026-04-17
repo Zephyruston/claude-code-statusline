@@ -87,7 +87,7 @@ if ses_dur_ms > 0:
 
 token_line = (
     f"Current: in:{fmt(ses_in)}  out:{fmt(ses_out)}  "
-    f"\u2191cache:{fmt(ses_cr)}  \u270Ecache:{fmt(ses_cw)}  |  Cost: ${round(ses_cost,3)}"
+    f"rcache:{fmt(ses_cr)}  wcache:{fmt(ses_cw)}  |  Cost: ${round(ses_cost,3)}"
 )
 if dur_str:
     token_line += f"  |  duration: {dur_str}"
@@ -297,11 +297,11 @@ except Exception:
 
 # ── build remaining lines ─────────────────────────────────────────────────────
 proj_line  = (f"Project: in:{fmt(proj_in)}  out:{fmt(proj_out)}  "
-              f"\u2191cache:{fmt(proj_cr)}  \u270Ecache:{fmt(proj_cw)}")
+              f"rcache:{fmt(proj_cr)}  wcache:{fmt(proj_cw)}")
 today_line = (f"Today:   in:{fmt(today_in)}  out:{fmt(today_out)}  "
-              f"\u2191cache:{fmt(today_cr)}  \u270Ecache:{fmt(today_cw)}")
+              f"rcache:{fmt(today_cr)}  wcache:{fmt(today_cw)}")
 total_line = (f"Total:   in:{fmt(total_in)}  out:{fmt(total_out)}  "
-              f"\u2191cache:{fmt(total_cr)}  \u270Ecache:{fmt(total_cw)}")
+              f"rcache:{fmt(total_cr)}  wcache:{fmt(total_cw)}")
 
 # ── print all 10 lines ────────────────────────────────────────────────────────
 # Line 1 (git) is printed by bash; we print lines 2-10 here.
