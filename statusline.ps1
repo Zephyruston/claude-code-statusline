@@ -58,14 +58,48 @@ $dtLine   = "$datePart $utcTime UTC  |  $cstTime CST  |  v$version"
 
 # --- Model & context ---
 $model   = if ($d.model -and $d.model.display_name) { $d.model.display_name } else { "Unknown" }
-$ctxPct  = if ($d.context_window -and $null -ne $d.context_window.used_percentage) { [math]::Round($d.context_window.used_percentage, 0) } else { 0 }
-$modelLine = "Model: $model  |  ctx:${ctxPct}%"
+
+# Context percentage
+if ($d.context_window -and $null -ne $d.context_window.used_percentage -and $d.context_window.used_percentage -gt 0) {
+    $ctxPct = [math]::Max(0, [math]::Min(100, [math]::Round($d.context_window.used_percentage)))
+} else {
+    $size = if ($d.context_window -and $d.context_window.context_window_size) { $d.context_window.context_window_size } else { 0 }
+    if ($size -gt 0) {
+        $usage = if ($d.context_window -and $d.context_window.current_usage) { $d.context_window.current_usage } else { $null }
+        $total = 0
+        if ($usage) {
+            if ($usage.input_tokens) { $total += $usage.input_tokens }
+            if ($usage.cache_creation_input_tokens) { $total += $usage.cache_creation_input_tokens }
+            if ($usage.cache_read_input_tokens) { $total += $usage.cache_read_input_tokens }
+        }
+        $ctxPct = [math]::Min(100, [math]::Round($total / $size * 100))
+    } else { $ctxPct = 0 }
+}
+
+# ANSI colors
+$reset   = [char]0x1B + '[0m'
+$dim     = [char]0x1B + '[2m'
+$red     = [char]0x1B + '[31m'
+$green   = [char]0x1B + '[32m'
+$yellow  = [char]0x1B + '[33m'
+$cyan    = [char]0x1B + '[36m'
+
+# Context bar
+$barW = 10
+$filled = [math]::Max(0, [math]::Min($barW, [math]::Round($ctxPct / 100 * $barW)))
+$empty = $barW - $filled
+if ($ctxPct -ge 85) { $ctxColor = $red }
+elseif ($ctxPct -ge 70) { $ctxColor = $yellow }
+else { $ctxColor = $green }
+$ctxBar = "$ctxColor$([char]0x2588 * $filled)$dim$([char]0x2591 * $empty)$reset"
+
+$modelLine = "$cyan[$model]$reset  ${dim}Context$reset $ctxBar $ctxColor${ctxPct}%$reset"
 
 # --- CWD ---
 $cwd = "?"
 if ($d.cwd) { $cwd = $d.cwd }
 elseif ($d.workspace -and $d.workspace.current_dir) { $cwd = $d.workspace.current_dir }
-$dirLine = "Dir:   $cwd"
+$dirLine = "${dim}Dir:$reset   $yellow$cwd$reset"
 
 # --- Session tokens (from statusline JSON) ---
 # Fields: context_window.total_input_tokens / total_output_tokens (session cumulative)

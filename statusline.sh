@@ -61,12 +61,36 @@ dt_line = f"{date_part} {utc_time} UTC  |  {cst_time} CST  |  v{version}"
 # ── model & context ───────────────────────────────────────────────────────────
 model   = jget(d, "model", "display_name") or "Unknown"
 ctx_raw = jget(d, "context_window", "used_percentage")
-ctx_pct = round(float(ctx_raw)) if ctx_raw is not None else 0
-model_line = f"Model: {model}  |  ctx:{ctx_pct}%"
+if ctx_raw is not None:
+    ctx_pct = min(100, max(0, round(float(ctx_raw))))
+else:
+    size = jget(d, "context_window", "context_window_size") or 0
+    if size > 0:
+        usage = jget(d, "context_window", "current_usage") or {}
+        total = (usage.get("input_tokens", 0) or 0) + \
+                (usage.get("cache_creation_input_tokens", 0) or 0) + \
+                (usage.get("cache_read_input_tokens", 0) or 0)
+        ctx_pct = min(100, round(total / size * 100))
+    else:
+        ctx_pct = 0
+
+# ANSI context bar
+BAR_W = 10
+filled = max(0, min(BAR_W, round(ctx_pct / 100 * BAR_W)))
+empty = BAR_W - filled
+if ctx_pct >= 85:
+    ctx_color = "\033[31m"      # red
+elif ctx_pct >= 70:
+    ctx_color = "\033[33m"      # yellow
+else:
+    ctx_color = "\033[32m"      # green
+ctx_bar = f"{ctx_color}{'█' * filled}\033[2m{'░' * empty}\033[0m"
+
+model_line = f"\033[36m[{model}]\033[0m  \033[2mContext\033[0m {ctx_bar} {ctx_color}{ctx_pct}%\033[0m"
 
 # ── cwd ───────────────────────────────────────────────────────────────────────
 cwd = jget(d, "cwd") or jget(d, "workspace", "current_dir") or "?"
-dir_line = f"Dir:   {cwd}"
+dir_line = f"\033[2mDir:\033[0m   \033[33m{cwd}\033[0m"
 
 # ── session tokens ────────────────────────────────────────────────────────────
 ses_in  = int(jget(d, "context_window", "total_input_tokens")  or 0)

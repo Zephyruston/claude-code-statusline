@@ -11,7 +11,7 @@ A feature-rich statusline script for [Claude Code](https://docs.anthropic.com/en
 
 ```
 Git [main]  M:2  D:0  S:1  U:3   A:0  B:1  V:0  C:0
-Model: Claude Sonnet 4.6  |  ctx:45%
+[Opus 4.7]  Context ████░░░░░░ 45%
 Dir:   /your/project
 Quota:   5h:30%  7d:15%
 Current: in:86.3k  out:59k  ↑cache:0  ✎cache:125.7k  |  Cost: $0.383  |  1h24m  +120/-45
@@ -21,6 +21,8 @@ Total:   in:98M  out:2M  ↑cache:104.8M  ✎cache:307.8M
 Session: a5363bfe-1234-5678-abcd-ef0123456789
 2026-04-16 04:27 UTC  |  12:27 CST  |  v2.1.110
 ```
+
+> **Model** line uses ANSI colors: model name in cyan, context bar in green/yellow/red depending on usage. **Dir** line highlights the path in yellow.
 
 ## What Each Line Shows
 
