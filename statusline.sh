@@ -118,12 +118,40 @@ if dur_str:
 if ses_added > 0 or ses_removed > 0:
     token_line += f"  Changes: +{ses_added}/-{ses_removed}"
 
-# ── quota ─────────────────────────────────────────────────────────────────────
+# ── quota (Anthropic) ──────────────────────────────────────────────────────────
 q5h_raw = jget(d, "rate_limits", "five_hour",  "used_percentage")
 q7d_raw = jget(d, "rate_limits", "seven_day",  "used_percentage")
 q5h = f"{round(float(q5h_raw))}%" if q5h_raw is not None else "?"
 q7d = f"{round(float(q7d_raw))}%" if q7d_raw is not None else "?"
 quota_line = f"Quota:   5h:{q5h}  7d:{q7d}"
+
+# ── DeepSeek status ───────────────────────────────────────────────────────────
+ds_raw = sys.argv[3] if len(sys.argv) > 3 else '{}'
+model_name = (jget(d, "model", "display_name") or "").lower()
+is_deepseek = "deepseek" in model_name
+
+deepseek_line = "DeepSeek: -"
+if is_deepseek and ds_raw:
+    try:
+        ds = json.loads(ds_raw)
+    except Exception:
+        ds = {}
+    if ds:
+        ds_cost   = float(ds.get("today_cost", 0) or 0)
+        ds_tokens = ds.get("today_tokens", {}) or {}
+        ds_hit    = int(ds_tokens.get("input_cache_hit", 0) or 0)
+        ds_miss   = int(ds_tokens.get("input_cache_miss", 0) or 0)
+        ds_out    = int(ds_tokens.get("output", 0) or 0)
+        ds_total  = int(ds_tokens.get("total", 0) or 0)
+        ds_rate   = float(ds_tokens.get("cache_hit_rate", 0) or 0)
+        deepseek_line = (
+            f"DeepSeek: today \033[33m¥{ds_cost:.4f}\033[0m  |  "
+            f"tok:\033[36m{fmt(ds_total)}\033[0m "
+            f"(in:\033[36m{fmt(ds_miss)}\033[0m "
+            f"hit:\033[36m{fmt(ds_hit)}\033[0m "
+            f"out:\033[36m{fmt(ds_out)}\033[0m)  |  "
+            f"hit_rate:\033[35m{ds_rate:.1f}%\033[0m"
+        )
 
 # ── session id ────────────────────────────────────────────────────────────────
 sid = jget(d, "session_id") or "?"
@@ -332,7 +360,10 @@ total_line = (f"Total:   in:{fmt(total_in)}  out:{fmt(total_out)}  "
 # To keep it simple, we print ALL lines from python and bash just calls python.
 print("__MODEL__"   + model_line)
 print("__DIR__"     + dir_line)
-print("__QUOTA__"   + quota_line)
+if is_deepseek:
+    print("__DEEPSEEK__" + deepseek_line)
+else:
+    print("__QUOTA__"   + quota_line)
 print("__CURRENT__" + token_line)
 print("__PROJ__"    + proj_line)
 print("__TODAY__"   + today_line)
@@ -382,8 +413,15 @@ fi
 
 git_line="Git [$branch]  M:$git_modified  D:$git_deleted  S:$git_staged  U:$git_untracked   A:$git_ahead  B:$git_behind  V:$git_diverged  C:$git_conflicts"
 
+# ── DeepSeek status (only for deepseek models) ────────────────────────────────
+ds_json='{}'
+model_name=$(echo "$json" | jq -r '.model.display_name // ""' 2>/dev/null)
+if [[ "$model_name" == *[Dd][Ee][Ee][Pp][Ss][Ee][Ee][Kk]* ]]; then
+    ds_json=$(timeout 2 deepseek status --json 2>/dev/null || echo '{}')
+fi
+
 # ── Run python for everything else ────────────────────────────────────────────
-py_out=$(python3 -c "$_py_main" "$json" "$HOME/.claude" 2>/dev/null)
+py_out=$(python3 -c "$_py_main" "$json" "$HOME/.claude" "$ds_json" 2>/dev/null)
 
 # ── Extract lines by prefix and strip prefix ─────────────────────────────────
 _line() { grep "^__${1}__" <<< "$py_out" | sed "s/^__${1}__//"; }
@@ -392,7 +430,13 @@ _line() { grep "^__${1}__" <<< "$py_out" | sed "s/^__${1}__//"; }
 printf '%s\n' "$git_line"
 _line MODEL
 _line DIR
-_line QUOTA
+# Line 4: DeepSeek (for deepseek models) or Quota (for Anthropic models)
+ds_line=$(_line DEEPSEEK)
+if [ -n "$ds_line" ]; then
+    printf '%s\n' "$ds_line"
+else
+    _line QUOTA
+fi
 _line CURRENT
 _line PROJ
 _line TODAY

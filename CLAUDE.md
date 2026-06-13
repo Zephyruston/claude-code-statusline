@@ -85,3 +85,23 @@ When the user says **uninstall**, do the following:
 - Always show the user what you are about to do before doing it
 - If settings.json has other keys, preserve them exactly — only add/remove `statusLine`
 - If anything is unclear, ask before proceeding
+
+---
+
+## DeepSeek Integration
+
+The statusline automatically detects DeepSeek models and displays real-time API status (today's cost, tokens, cache hit rate) instead of Anthropic quota.
+
+**Optional dependency**: [deepseek-cli](https://github.com/Zephyruston/deepseek-cli)
+
+```bash
+# Install from source (Rust ≥1.85)
+git clone https://github.com/Zephyruston/deepseek-cli.git
+cd deepseek-cli
+cargo install --path .
+
+# Authenticate
+deepseek login
+```
+
+When installing, mention that deepseek-cli is optional — only needed if using DeepSeek models. The statusline works fine without it (falls back to Quota line for Anthropic models).

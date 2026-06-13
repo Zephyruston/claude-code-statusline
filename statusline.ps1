@@ -47,6 +47,20 @@ try {
 } catch {}
 $gitLine = "Git [$branch]  M:$gitModified  D:$gitDeleted  S:$gitStaged  U:$gitUntracked   A:$gitAhead  B:$gitBehind  V:$gitDiverged  C:$gitConflicts"
 
+# --- DeepSeek status (only for deepseek models) ---
+$isDeepseek = $false
+$dsJson = '{}'
+try {
+    $modelName = if ($d.model -and $d.model.display_name) { $d.model.display_name } else { '' }
+    if ($modelName -match 'deepseek') {
+        $isDeepseek = $true
+        $dsOutput = deepseek status --json 2>$null
+        if ($LASTEXITCODE -eq 0 -and $dsOutput) {
+            $dsJson = $dsOutput
+        }
+    }
+} catch {}
+
 # --- Date / Time ---
 $utcNow   = [System.DateTime]::UtcNow
 $cstNow   = $utcNow.AddHours(8)
@@ -82,6 +96,7 @@ $dim     = [char]0x1B + '[2m'
 $red     = [char]0x1B + '[31m'
 $green   = [char]0x1B + '[32m'
 $yellow  = [char]0x1B + '[33m'
+$magenta = [char]0x1B + '[35m'
 $cyan    = [char]0x1B + '[36m'
 
 # Context bar
@@ -145,6 +160,27 @@ try {
     }
 } catch {}
 $quotaLine = "Quota:   5h:$quota5h  7d:$quota7d"
+
+# --- DeepSeek status ---
+$deepseekLine = "DeepSeek: -"
+if ($isDeepseek -and $dsJson -ne '{}') {
+    try {
+        $ds = ConvertFrom-Json $dsJson
+        $dsCost   = if ($ds.today_cost) { [double]$ds.today_cost } else { 0.0 }
+        $dsTokens = if ($ds.today_tokens) { $ds.today_tokens } else { $null }
+        $dsHit    = if ($dsTokens -and $dsTokens.input_cache_hit) { [long]$dsTokens.input_cache_hit } else { 0 }
+        $dsMiss   = if ($dsTokens -and $dsTokens.input_cache_miss) { [long]$dsTokens.input_cache_miss } else { 0 }
+        $dsOut    = if ($dsTokens -and $dsTokens.output) { [long]$dsTokens.output } else { 0 }
+        $dsTotal  = if ($dsTokens -and $dsTokens.total) { [long]$dsTokens.total } else { 0 }
+        $dsRate   = if ($dsTokens -and $null -ne $dsTokens.cache_hit_rate) { [double]$dsTokens.cache_hit_rate } else { 0.0 }
+        $deepseekLine = "DeepSeek: today $yellow`$$([math]::Round($dsCost,4))$reset  |  " +
+            "tok:$cyan$(Format-Tok $dsTotal)$reset " +
+            "(in:$cyan$(Format-Tok $dsMiss)$reset " +
+            "hit:$cyan$(Format-Tok $dsHit)$reset " +
+            "out:$cyan$(Format-Tok $dsOut)$reset)  |  " +
+            "hit_rate:$magenta$([math]::Round($dsRate,1))%$reset"
+    } catch {}
+}
 
 # --- Project / Today / Total tokens (with file-mtime cache) ---
 $cacheFile = $claudeDir + '/statusline-tok-cache.json'
@@ -306,7 +342,12 @@ $sessionLine = "Session: $sid"
 Write-Output $gitLine
 Write-Output $modelLine
 Write-Output $dirLine
-Write-Output $quotaLine
+# Line 4: DeepSeek (for deepseek models) or Quota (for Anthropic models)
+if ($isDeepseek) {
+    Write-Output $deepseekLine
+} else {
+    Write-Output $quotaLine
+}
 Write-Output $tokenLine
 Write-Output $projLine
 Write-Output $todayLine

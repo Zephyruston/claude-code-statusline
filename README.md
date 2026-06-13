@@ -13,7 +13,7 @@ A feature-rich statusline script for [Claude Code](https://docs.anthropic.com/en
 Git [main]  M:2  D:0  S:1  U:3   A:0  B:1  V:0  C:0
 [Opus 4.7]  Context ████░░░░░░ 45%
 Dir:   /your/project
-Quota:   5h:30%  7d:15%
+DeepSeek: today ¥0.0120  |  tok:1.5k (in:800 hit:200 out:500)  |  hit_rate:20.0%
 Current: in:86.3k  out:59k  ↑cache:0  ✎cache:125.7k  |  Cost: $0.383  |  1h24m  +120/-45
 Project: in:302k  out:81k  ↑cache:0  ✎cache:16.8M
 Today:   in:375k  out:115k  ↑cache:0  ✎cache:35M
@@ -22,7 +22,7 @@ Session: a5363bfe-1234-5678-abcd-ef0123456789
 2026-04-16 04:27 UTC  |  12:27 CST  |  v2.1.110
 ```
 
-> **Model** line uses ANSI colors: model name in cyan, context bar in green/yellow/red depending on usage. **Dir** line highlights the path in yellow.
+> **Model** line uses ANSI colors: model name in cyan, context bar in green/yellow/red depending on usage. **Dir** line highlights the path in yellow. **DeepSeek** line (shown automatically for deepseek models) highlights cost in yellow, token counts in cyan, and cache hit rate in magenta.
 
 ## What Each Line Shows
 
@@ -31,7 +31,8 @@ Session: a5363bfe-1234-5678-abcd-ef0123456789
 | **Git** | Branch name, modified/deleted/staged/untracked files, ahead/behind/diverged/conflicts vs remote |
 | **Model** | Active model name and context window usage % |
 | **Dir** | Current working directory |
-| **Quota** | Claude Max subscription quota — 5-hour window and 7-day window usage % |
+| **Quota** | Claude Max subscription quota — 5-hour window and 7-day window usage % (Anthropic models only) |
+| **DeepSeek** | Today's API cost (CNY), token usage (input cache miss/hit, output, total), cache hit rate % (deepseek models only) |
 | **Current** | Session cumulative tokens (in/out), cache read/write, equivalent API cost, session duration, lines added/removed |
 | **Project** | All-time token usage for the current project directory |
 | **Today** | Token usage across all projects today (CST timezone) |
@@ -125,6 +126,41 @@ ts_cst = (ts_utc + timedelta(hours=8))  # today's token filter
 ```
 
 Change `8` to your UTC offset (e.g. `-5` for EST, `9` for JST).
+
+---
+
+## DeepSeek Integration
+
+When using DeepSeek models (e.g. `deepseek-v4-pro`, `deepseek-v4-flash`), the statusline automatically detects the model and replaces the Quota line with real-time DeepSeek API status.
+
+### Requirements
+
+Install [deepseek-cli](https://github.com/Zephyruston/deepseek-cli) and authenticate:
+
+```bash
+# Install from source (Rust ≥1.85)
+git clone https://github.com/Zephyruston/deepseek-cli.git
+cd deepseek-cli
+cargo install --path .
+
+# Authenticate (WeChat QR)
+deepseek login
+```
+
+The CLI stores the token at `~/.config/deepseek-cli/config.toml`. No environment variable needed.
+
+The statusline calls `deepseek status --json` with a 2-second timeout. If the CLI is unavailable or the model is not a DeepSeek model, it silently falls back to the standard Quota line.
+
+### Fields displayed
+
+| Field | Source path |
+|-------|-------------|
+| today cost | `today_cost` |
+| total tokens | `today_tokens.total` |
+| input (cache miss) | `today_tokens.input_cache_miss` |
+| input (cache hit) | `today_tokens.input_cache_hit` |
+| output | `today_tokens.output` |
+| cache hit rate | `today_tokens.cache_hit_rate` |
 
 ---
 
