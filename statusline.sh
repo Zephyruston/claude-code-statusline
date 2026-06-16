@@ -150,7 +150,7 @@ if is_deepseek and ds_raw:
             f"(in:\033[36m{fmt(ds_miss)}\033[0m "
             f"hit:\033[36m{fmt(ds_hit)}\033[0m "
             f"out:\033[36m{fmt(ds_out)}\033[0m)  |  "
-            f"hit_rate:\033[35m{ds_rate:.1f}%\033[0m"
+            f"hit_rate:\033[35m{ds_rate*100:.1f}%\033[0m"
         )
 
 # ── session id ────────────────────────────────────────────────────────────────

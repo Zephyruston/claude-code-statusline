@@ -178,7 +178,7 @@ if ($isDeepseek -and $dsJson -ne '{}') {
             "(in:$cyan$(Format-Tok $dsMiss)$reset " +
             "hit:$cyan$(Format-Tok $dsHit)$reset " +
             "out:$cyan$(Format-Tok $dsOut)$reset)  |  " +
-            "hit_rate:$magenta$([math]::Round($dsRate,1))%$reset"
+            "hit_rate:$magenta$([math]::Round($dsRate*100,1))%$reset"
     } catch {}
 }
 
