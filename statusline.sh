@@ -372,6 +372,16 @@ print("__SESSION__" + session_line)
 print("__DT__"      + dt_line)
 PYEOF
 
+# ── Motto (user-customizable) ─────────────────────────────────────────────────
+motto_file="$HOME/.claude/statusline-motto.txt"
+motto_line=""
+if [ -f "$motto_file" ]; then
+    _motto=$(cat "$motto_file" 2>/dev/null | head -1 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
+    if [ -n "$_motto" ]; then
+        motto_line=$(printf '\033[2;37;42m ✦ %s \033[0m' "$_motto")
+    fi
+fi
+
 # ── Git status (bash, runs in current directory) ──────────────────────────────
 git_modified=0; git_deleted=0; git_staged=0; git_untracked=0
 git_ahead=0; git_behind=0; git_diverged=0; git_conflicts=0
@@ -426,7 +436,10 @@ py_out=$(python3 -c "$_py_main" "$json" "$HOME/.claude" "$ds_json" 2>/dev/null)
 # ── Extract lines by prefix and strip prefix ─────────────────────────────────
 _line() { grep "^__${1}__" <<< "$py_out" | sed "s/^__${1}__//"; }
 
-# ── Output all 10 lines ───────────────────────────────────────────────────────
+# ── Output all lines ──────────────────────────────────────────────────────────
+if [ -n "$motto_line" ]; then
+    printf '%s\n' "$motto_line"
+fi
 printf '%s\n' "$git_line"
 _line MODEL
 _line DIR

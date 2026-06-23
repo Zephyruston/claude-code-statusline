@@ -18,6 +18,20 @@ function Format-Tok([long]$n) {
 
 $claudeDir = 'C:/Users/Murphy/.claude'
 
+# --- Motto (user-customizable) ---
+$mottoLine = ''
+$mottoFile = $claudeDir + '/statusline-motto.txt'
+if (Test-Path $mottoFile) {
+    $mottoText = (Get-Content $mottoFile -First 1).Trim()
+    if ($mottoText) {
+        $bold  = [char]0x1B + '[1m'
+        $dim      = [char]0x1B + '[2m'
+        $bgGreen  = [char]0x1B + '[42m'
+        $white    = [char]0x1B + '[37m'
+        $mottoLine = "${dim}${white}${bgGreen} `u{2726} $mottoText ${reset}"
+    }
+}
+
 # --- Git status ---
 $gitModified  = 0; $gitDeleted = 0; $gitStaged = 0; $gitUntracked = 0
 $gitAhead = 0; $gitBehind = 0; $gitDiverged = 0; $gitConflicts = 0
@@ -339,6 +353,7 @@ $sid = if ($d.session_id) { $d.session_id } else { "?" }
 $sessionLine = "Session: $sid"
 
 # --- Output ---
+if ($mottoLine) { Write-Output $mottoLine }
 Write-Output $gitLine
 Write-Output $modelLine
 Write-Output $dirLine
