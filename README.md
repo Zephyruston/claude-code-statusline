@@ -23,13 +23,13 @@ Session: a5363bfe-1234-5678-abcd-ef0123456789
 2026-04-16 04:27 UTC  |  12:27 CST  |  v2.1.110
 ```
 
-> **Motto** line (optional) uses bold white text on magenta background with a `✦` marker. **Model** line uses ANSI colors: model name in cyan, context bar in green/yellow/red depending on usage. **Dir** line highlights the path in yellow. **DeepSeek** line (shown automatically for deepseek models) highlights cost in yellow, token counts in cyan, and cache hit rate in magenta.
+> **Motto** line (optional) uses dim white text on dark green background with a `✦` marker. **Model** line uses ANSI colors: model name in cyan, context bar in green/yellow/red depending on usage. **Dir** line highlights the path in yellow. **DeepSeek** line (shown automatically for deepseek models) highlights cost in yellow, token counts in cyan, and cache hit rate in magenta.
 
 ## What Each Line Shows
 
 | Line | Description |
 |------|-------------|
-| **Motto** | User-customizable motto, read from `~/.claude/statusline-motto.txt` (bold magenta, optional) |
+| **Motto** | User-customizable motto, read from `~/.claude/statusline-motto.txt` (dim white on dark green, optional) |
 | **Git** | Branch name, modified/deleted/staged/untracked files, ahead/behind/diverged/conflicts vs remote |
 | **Model** | Active model name and context window usage % |
 | **Dir** | Current working directory |
@@ -109,7 +109,7 @@ Claude Code will remove the script and clean up `settings.json`.
 
 ### Motto
 
-Create `~/.claude/statusline-motto.txt` with your personal motto (one line). It will appear as the first line of the statusline in bold magenta:
+Create `~/.claude/statusline-motto.txt` with your personal motto (one line). It will appear as the first line of the statusline with dim white text on dark green background:
 
 ```bash
 echo "Stay hungry, stay foolish" > ~/.claude/statusline-motto.txt
