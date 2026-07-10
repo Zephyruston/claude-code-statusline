@@ -167,12 +167,12 @@ The statusline calls `deepseek status --json` with a 2-second timeout. If the CL
 
 | Field | Source path |
 |-------|-------------|
-| today cost | `today_cost` |
-| total tokens | `today_tokens.total` |
-| input (cache miss) | `today_tokens.input_cache_miss` |
-| input (cache hit) | `today_tokens.input_cache_hit` |
-| output | `today_tokens.output` |
-| cache hit rate | `today_tokens.cache_hit_rate` |
+| today cost | `period_cost` |
+| total tokens | `period_tokens` |
+| input (cache miss) | `period_cache_miss` |
+| input (cache hit) | `period_cache_hit` |
+| output | `period_output_tokens` |
+| cache hit rate | `cache_hit_rate` |
 
 ---
 

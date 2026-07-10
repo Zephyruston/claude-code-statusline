@@ -24,11 +24,11 @@ $mottoFile = $claudeDir + '/statusline-motto.txt'
 if (Test-Path $mottoFile) {
     $mottoText = (Get-Content $mottoFile -First 1).Trim()
     if ($mottoText) {
-        $bold  = [char]0x1B + '[1m'
-        $dim      = [char]0x1B + '[2m'
-        $bgGreen  = [char]0x1B + '[42m'
-        $white    = [char]0x1B + '[37m'
-        $mottoLine = "${dim}${white}${bgGreen} `u{2726} $mottoText ${reset}"
+        $bold    = [char]0x1B + '[1m'
+        $dim     = [char]0x1B + '[2m'
+        $bgGold  = [char]0x1B + '[103m'
+        $black   = [char]0x1B + '[30m'
+        $mottoLine = "${dim}${black}${bgGold} `u{2726} $mottoText ${reset}"
     }
 }
 
@@ -180,13 +180,13 @@ $deepseekLine = "DeepSeek: -"
 if ($isDeepseek -and $dsJson -ne '{}') {
     try {
         $ds = ConvertFrom-Json $dsJson
-        $dsCost   = if ($ds.today_cost) { [double]$ds.today_cost } else { 0.0 }
-        $dsTokens = if ($ds.today_tokens) { $ds.today_tokens } else { $null }
-        $dsHit    = if ($dsTokens -and $dsTokens.input_cache_hit) { [long]$dsTokens.input_cache_hit } else { 0 }
-        $dsMiss   = if ($dsTokens -and $dsTokens.input_cache_miss) { [long]$dsTokens.input_cache_miss } else { 0 }
-        $dsOut    = if ($dsTokens -and $dsTokens.output) { [long]$dsTokens.output } else { 0 }
-        $dsTotal  = if ($dsTokens -and $dsTokens.total) { [long]$dsTokens.total } else { 0 }
-        $dsRate   = if ($dsTokens -and $null -ne $dsTokens.cache_hit_rate) { [double]$dsTokens.cache_hit_rate } else { 0.0 }
+        $dsCost   = if ($ds.period_cost) { [double]$ds.period_cost } else { 0.0 }
+        if ($dsCost -eq 0.0) { $dsCost = 0.0 }  # normalize -0.0
+        $dsTotal  = if ($ds.period_tokens) { [long]$ds.period_tokens } else { 0 }
+        $dsHit    = if ($ds.period_cache_hit) { [long]$ds.period_cache_hit } else { 0 }
+        $dsMiss   = if ($ds.period_cache_miss) { [long]$ds.period_cache_miss } else { 0 }
+        $dsOut    = if ($ds.period_output_tokens) { [long]$ds.period_output_tokens } else { 0 }
+        $dsRate   = if ($ds.cache_hit_rate) { [double]$ds.cache_hit_rate } else { 0.0 }
         $deepseekLine = "DeepSeek: today $yellow`$$([math]::Round($dsCost,4))$reset  |  " +
             "tok:$cyan$(Format-Tok $dsTotal)$reset " +
             "(in:$cyan$(Format-Tok $dsMiss)$reset " +

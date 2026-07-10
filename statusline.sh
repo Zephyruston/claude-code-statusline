@@ -137,13 +137,14 @@ if is_deepseek and ds_raw:
     except Exception:
         ds = {}
     if ds:
-        ds_cost   = float(ds.get("today_cost", 0) or 0)
-        ds_tokens = ds.get("today_tokens", {}) or {}
-        ds_hit    = int(ds_tokens.get("input_cache_hit", 0) or 0)
-        ds_miss   = int(ds_tokens.get("input_cache_miss", 0) or 0)
-        ds_out    = int(ds_tokens.get("output", 0) or 0)
-        ds_total  = int(ds_tokens.get("total", 0) or 0)
-        ds_rate   = float(ds_tokens.get("cache_hit_rate", 0) or 0)
+        ds_cost   = float(ds.get("period_cost", 0) or 0)
+        if ds_cost == 0.0:
+            ds_cost = 0.0  # normalize -0.0
+        ds_total  = int(ds.get("period_tokens", 0) or 0)
+        ds_hit    = int(ds.get("period_cache_hit", 0) or 0)
+        ds_miss   = int(ds.get("period_cache_miss", 0) or 0)
+        ds_out    = int(ds.get("period_output_tokens", 0) or 0)
+        ds_rate   = float(ds.get("cache_hit_rate", 0) or 0)
         deepseek_line = (
             f"DeepSeek: today \033[33m¥{ds_cost:.4f}\033[0m  |  "
             f"tok:\033[36m{fmt(ds_total)}\033[0m "
@@ -378,7 +379,7 @@ motto_line=""
 if [ -f "$motto_file" ]; then
     _motto=$(cat "$motto_file" 2>/dev/null | head -1 | sed 's/^[[:space:]]*//;s/[[:space:]]*$//')
     if [ -n "$_motto" ]; then
-        motto_line=$(printf '\033[2;37;42m ✦ %s \033[0m' "$_motto")
+        motto_line=$(printf '\033[2;30;103m ✦ %s \033[0m' "$_motto")
     fi
 fi
 
