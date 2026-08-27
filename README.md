@@ -3,6 +3,7 @@
 A feature-rich statusline script for [Claude Code](https://docs.anthropic.com/en/docs/claude-code), displaying real-time session info, token usage, quota, git status, and historical statistics.
 
 **Platform support:**
+
 - ✅ Windows — `statusline.ps1` (PowerShell)
 - ✅ macOS — `statusline.sh` (bash + python3)
 - ✅ Linux — `statusline.sh` (bash + python3)
@@ -20,6 +21,7 @@ Project: in:302k  out:81k  ↑cache:0  ✎cache:16.8M
 Today:   in:375k  out:115k  ↑cache:0  ✎cache:35M
 Total:   in:98M  out:2M  ↑cache:104.8M  ✎cache:307.8M
 Session: a5363bfe-1234-5678-abcd-ef0123456789
+⛰ 梁文峰时间(full price)  →  1h42m 后滑入 🌊 梁文谷时间(half price)
 2026-04-16 04:27 UTC  |  12:27 CST  |  v2.1.110
 ```
 
@@ -27,20 +29,21 @@ Session: a5363bfe-1234-5678-abcd-ef0123456789
 
 ## What Each Line Shows
 
-| Line | Description |
-|------|-------------|
-| **Motto** | User-customizable motto, read from `~/.claude/statusline-motto.txt` (dim white on dark green, optional) |
-| **Git** | Branch name, modified/deleted/staged/untracked files, ahead/behind/diverged/conflicts vs remote |
-| **Model** | Active model name and context window usage % |
-| **Dir** | Current working directory |
-| **Quota** | Claude Max subscription quota — 5-hour window and 7-day window usage % (Anthropic models only) |
-| **DeepSeek** | Today's API cost (CNY), token usage (input cache miss/hit, output, total), cache hit rate % (deepseek models only) |
-| **Current** | Session cumulative tokens (in/out), cache read/write, equivalent API cost, session duration, lines added/removed |
-| **Project** | All-time token usage for the current project directory |
-| **Today** | Token usage across all projects today (CST timezone) |
-| **Total** | All-time token usage across all projects and all time |
-| **Session** | Full session ID |
-| **Date/Time** | UTC and CST (UTC+8) time, Claude Code version |
+| Line                        | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                         |
+| --------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Motto**                   | User-customizable motto, read from `~/.claude/statusline-motto.txt` (dim white on dark green, optional)                                                                                                                                                                                                                                                                                                                                                             |
+| **Git**                     | Branch name, modified/deleted/staged/untracked files, ahead/behind/diverged/conflicts vs remote                                                                                                                                                                                                                                                                                                                                                                     |
+| **Model**                   | Active model name and context window usage %                                                                                                                                                                                                                                                                                                                                                                                                                        |
+| **Dir**                     | Current working directory                                                                                                                                                                                                                                                                                                                                                                                                                                           |
+| **Quota**                   | Claude Max subscription quota — 5-hour window and 7-day window usage % (Anthropic models only)                                                                                                                                                                                                                                                                                                                                                                      |
+| **DeepSeek**                | Today's API cost (CNY), token usage (input cache miss/hit, output, total), cache hit rate % (deepseek models only)                                                                                                                                                                                                                                                                                                                                                  |
+| **Current**                 | Session cumulative tokens (in/out), cache read/write, equivalent API cost, session duration, lines added/removed                                                                                                                                                                                                                                                                                                                                                    |
+| **Project**                 | All-time token usage for the current project directory                                                                                                                                                                                                                                                                                                                                                                                                              |
+| **Today**                   | Token usage across all projects today (CST timezone)                                                                                                                                                                                                                                                                                                                                                                                                                |
+| **Total**                   | All-time token usage across all projects and all time                                                                                                                                                                                                                                                                                                                                                                                                               |
+| **Session**                 | Full session ID                                                                                                                                                                                                                                                                                                                                                                                                                                                     |
+| **LiangWenFeng/LiangWenGu** | Peak/valley clock for DeepSeek's pricing schedule, as a pun on DeepSeek's founder: Beijing workdays 09:00–12:00 & 14:00–18:00 are ⛰ 梁文峰时间 ("peak", full price), everything else is 🌊 梁文谷时间 ("valley", half price), plus a countdown to the next switch. The current state is drawn as a loud pill — bold black on red for the pricey peak, black on bright cyan for the cheap valley — with the upcoming switch highlighted in hot yellow / bright cyan |
+| **Date/Time**               | UTC and CST (UTC+8) time, Claude Code version                                                                                                                                                                                                                                                                                                                                                                                                                       |
 
 ### Git field legend
 
@@ -122,6 +125,7 @@ Delete the file (or leave it empty) to hide the motto line.
 The script defaults to **CST (UTC+8)**. To change it, open the installed script and update the `+8` offset.
 
 **Windows** (`~/.claude/statusline.ps1`):
+
 ```powershell
 # clock display
 $cstNow = $utcNow.AddHours(8)
@@ -131,6 +135,7 @@ $cstNow = [System.DateTime]::UtcNow.AddHours(8)
 ```
 
 **macOS / Linux** (`~/.claude/statusline.sh`):
+
 ```python
 # Two occurrences of timedelta(hours=8) in the python block — change both:
 cst = utc + timedelta(hours=8)          # clock display
@@ -165,14 +170,14 @@ The statusline calls `deepseek status --json` with a 2-second timeout. If the CL
 
 ### Fields displayed
 
-| Field | Source path |
-|-------|-------------|
-| today cost | `period_cost` |
-| total tokens | `period_tokens` |
-| input (cache miss) | `period_cache_miss` |
-| input (cache hit) | `period_cache_hit` |
-| output | `period_output_tokens` |
-| cache hit rate | `cache_hit_rate` |
+| Field              | Source path            |
+| ------------------ | ---------------------- |
+| today cost         | `period_cost`          |
+| total tokens       | `period_tokens`        |
+| input (cache miss) | `period_cache_miss`    |
+| input (cache hit)  | `period_cache_hit`     |
+| output             | `period_output_tokens` |
+| cache hit rate     | `cache_hit_rate`       |
 
 ---
 
@@ -180,9 +185,9 @@ The statusline calls `deepseek status --json` with a 2-second timeout. If the CL
 
 Token stats (Project / Today / Total) are cached in `~/.claude/statusline-tok-cache.json` and auto-invalidated when new session files appear.
 
-| Scenario | Time |
-|----------|------|
-| Warm cache | ~200ms |
+| Scenario          | Time      |
+| ----------------- | --------- |
+| Warm cache        | ~200ms    |
 | Cold / cache miss | ~600ms–2s |
 
 ---

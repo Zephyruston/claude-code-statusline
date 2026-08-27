@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Claude Code Statusline — macOS / Linux
-# Reads session JSON from stdin, outputs 10-line statusline.
+# Reads session JSON from stdin, outputs an 11-line statusline (+ optional motto).
 # Requires: bash, python3 (stdlib only), git
 
 set -o pipefail
@@ -157,6 +157,48 @@ if is_deepseek and ds_raw:
 # ── session id ────────────────────────────────────────────────────────────────
 sid = jget(d, "session_id") or "?"
 session_line = f"Session: {sid}"
+
+# ── 梁文峰时间 / 梁文谷时间 (Beijing peak/valley clock, DeepSeek pricing pun) ─
+# 峰: Beijing Mon-Fri 09:00-12:00 & 14:00-18:00; everything else is 谷.
+def _pv_state(bn):
+    """bn = naive datetime on Beijing wall clock -> (is_peak, secs_until_switch)."""
+    tmin = bn.hour * 60 + bn.minute
+    is_peak = bn.weekday() < 5 and (540 <= tmin < 720 or 840 <= tmin < 1080)
+    for dday in range(9):
+        day = bn.date() + timedelta(days=dday)
+        if day.weekday() >= 5:
+            continue
+        for hour in (9, 12, 14, 18):
+            cand = datetime.combine(day, datetime.min.time()) + timedelta(hours=hour)
+            if cand > bn:
+                return is_peak, int((cand - bn).total_seconds())
+    return is_peak, 7 * 86400
+
+def _fmt_countdown(secs):
+    mins = -(-secs // 60)                       # round up to whole minutes
+    days, rem = divmod(mins, 1440)
+    h, m = divmod(rem, 60)
+    if days:
+        return f"{days}d{h}h"
+    if h:
+        return f"{h}h" if m == 0 else f"{h}h{m}m"
+    return f"{m}m"
+
+pv_is_peak, pv_secs = _pv_state(cst.replace(tzinfo=None))
+if pv_is_peak:
+    # Peak burns money: bold bright-white on red pill; upcoming valley is calm cyan.
+    pv_line = (
+        f"\033[1;30;101m ⛰ 梁文峰时间 \033[0m\033[2m(full price)\033[0m  →  "
+        f"\033[36m{_fmt_countdown(pv_secs)}\033[0m 后滑入 "
+        f"\033[1;96m🌊 梁文谷时间(half price)\033[0m"
+    )
+else:
+    # Valley is a bargain: black on bright-cyan pill; upcoming peak glows hot yellow.
+    pv_line = (
+        f"\033[30;106m 🌊 梁文谷时间 \033[0m\033[2m(half price)\033[0m  →  "
+        f"\033[36m{_fmt_countdown(pv_secs)}\033[0m 后爬上 "
+        f"\033[1;93m⛰ 梁文峰时间(full price)\033[0m"
+    )
 
 # ── token stats (proj / today / total) with mtime cache ──────────────────────
 cache_file   = Path(claude_dir) / "statusline-tok-cache.json"
@@ -370,6 +412,7 @@ print("__PROJ__"    + proj_line)
 print("__TODAY__"   + today_line)
 print("__TOTAL__"   + total_line)
 print("__SESSION__" + session_line)
+print("__PV__"      + pv_line)
 print("__DT__"      + dt_line)
 PYEOF
 
@@ -456,4 +499,5 @@ _line PROJ
 _line TODAY
 _line TOTAL
 _line SESSION
+_line PV
 _line DT

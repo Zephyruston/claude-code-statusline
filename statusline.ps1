@@ -352,6 +352,60 @@ $totalLine = "Total:   in:$(Format-Tok $totalIn)  out:$(Format-Tok $totalOut)  "
 $sid = if ($d.session_id) { $d.session_id } else { "?" }
 $sessionLine = "Session: $sid"
 
+# --- Liang Wenfeng / Liang Wengu peak-valley clock (Beijing; DeepSeek pricing pun) ---
+# Peak: Mon-Fri 09:00-12:00 & 14:00-18:00 CST; everything else is valley.
+# This file stays pure ASCII, so CJK/emoji are built from Unicode code points.
+function ConvertFrom-CodePoints([int[]]$cps) { -join ($cps | ForEach-Object { [char]$_ }) }
+$cjkLwfTime   = ConvertFrom-CodePoints @(0x6881, 0x6587, 0x5CF0, 0x65F6, 0x95F4)
+$cjkLwgTime   = ConvertFrom-CodePoints @(0x6881, 0x6587, 0x8C37, 0x65F6, 0x95F4)
+$cjkGlideIn   = ConvertFrom-CodePoints @(0x540E, 0x6ED1, 0x5165)
+$cjkClimbUp   = ConvertFrom-CodePoints @(0x540E, 0x722C, 0x4E0A)
+$pvPeakIcon   = [string][char]0x26F0                            # mountain
+$pvValleyIcon = "$([char]0xD83C)$([char]0xDF0A)"                # wave (surrogate pair)
+$pvArrow      = [string][char]0x2192                            # rightwards arrow
+$pvPeakPill   = [char]0x1B + '[1;30;101m'                       # bold black on red (peak: burn$$)
+$pvValPill    = [char]0x1B + '[30;106m'                         # black on bright cyan (valley: bargain)
+$pvHiYellow   = [char]0x1B + '[1;93m'                           # bold bright yellow (upcoming peak hint)
+$pvHiCyan     = [char]0x1B + '[1;96m'                           # bold bright cyan (upcoming valley hint)
+
+function Get-PvState([datetime]$bn) {
+    $tmin = $bn.Hour * 60 + $bn.Minute
+    $dow = [int]$bn.DayOfWeek      # Sunday=0 .. Saturday=6
+    $isPeak = ($dow -ge 1 -and $dow -le 5) -and (
+        ($tmin -ge 540 -and $tmin -lt 720) -or ($tmin -ge 840 -and $tmin -lt 1080))
+    for ($dday = 0; $dday -lt 9; $dday++) {
+        $day = $bn.Date.AddDays($dday)
+        $dw = [int]$day.DayOfWeek
+        if ($dw -ge 1 -and $dw -le 5) {
+            foreach ($edgeHour in 9, 12, 14, 18) {
+                $cand = $day.AddHours($edgeHour)
+                if ($cand -gt $bn) {
+                    return @{ IsPeak = $isPeak; Seconds = ($cand - $bn).TotalSeconds }
+                }
+            }
+        }
+    }
+    return @{ IsPeak = $isPeak; Seconds = 604800 }
+}
+
+function Format-PvCountdown([double]$secs) {
+    $mins = [int][math]::Ceiling($secs / 60)
+    $days = [int][math]::Floor($mins / 1440); $remMin = $mins % 1440
+    $hrs  = [int][math]::Floor($remMin / 60);  $m = $remMin % 60
+    if ($days -gt 0) { return "${days}d${hrs}h" }
+    if ($hrs  -gt 0) { return "$(if ($m -eq 0) { "${hrs}h" } else { "${hrs}h${m}m" })" }
+    return "${m}m"
+}
+
+$pvState = Get-PvState $cstNow
+if ($pvState.IsPeak) {
+    $pvLine = "$pvPeakPill $pvPeakIcon $cjkLwfTime $reset$dim(full price)$reset  $pvArrow  " +
+        "$cyan$(Format-PvCountdown $pvState.Seconds)$reset ${cjkGlideIn} $pvHiCyan$pvValleyIcon ${cjkLwgTime}(half price)$reset"
+} else {
+    $pvLine = "$pvValPill $pvValleyIcon $cjkLwgTime $reset$dim(half price)$reset  $pvArrow  " +
+        "$cyan$(Format-PvCountdown $pvState.Seconds)$reset ${cjkClimbUp} $pvHiYellow$pvPeakIcon ${cjkLwfTime}(full price)$reset"
+}
+
 # --- Output ---
 if ($mottoLine) { Write-Output $mottoLine }
 Write-Output $gitLine
@@ -368,4 +422,5 @@ Write-Output $projLine
 Write-Output $todayLine
 Write-Output $totalLine
 Write-Output $sessionLine
+Write-Output $pvLine
 Write-Output $dtLine
